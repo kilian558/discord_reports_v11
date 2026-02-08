@@ -74,7 +74,7 @@ class Reportview(discord.ui.View):
             author_player_id = False
             
             # For player_not_found (self_report=True), only show limited buttons
-            # Message Reporter button
+            # Row 1: Communication
             message_player_button_label = get_translation(user_lang, "message_player").format(reported_player_name)
             message_player_button = MessagePlayerButton(
                 label=message_player_button_label,
@@ -86,7 +86,16 @@ class Reportview(discord.ui.View):
             )
             self.add_item(message_player_button)
             
-            # Switch Team Now button
+            unjustified_report_button = Unjustified_Report(author_name, author_player_id, user_lang, self.api_client)
+            self.add_item(unjustified_report_button)
+            
+            no_action_button = No_Action_Button(user_lang, self.api_client)
+            self.add_item(no_action_button)
+            
+            manual_process_button = Manual_process(user_lang, self.api_client)
+            self.add_item(manual_process_button)
+            
+            # Row 2: Action
             switch_team_now_button_label = get_translation(user_lang, "switch_team_now_button").format(reported_player_name)
             switch_team_now_button = SwitchTeamNowButton(
                 label=switch_team_now_button_label,
@@ -100,35 +109,10 @@ class Reportview(discord.ui.View):
             )
             self.add_item(switch_team_now_button)
             
-            # Unjustified Report
-            unjustified_report_button = Unjustified_Report(author_name, author_player_id, user_lang, self.api_client)
-            self.add_item(unjustified_report_button)
-            
-            # No Action
-            no_action_button = No_Action_Button(user_lang, self.api_client)
-            self.add_item(no_action_button)
-            
-            # Manual Process
-            manual_process_button = Manual_process(user_lang, self.api_client)
-            self.add_item(manual_process_button)
-            
             return  # Return early for self_report
 
-        # Message reported player
-        message_reported_player_button_label = get_translation(user_lang, "message_reported_player").format(reported_player_name)
-        message_reported_player_button = MessageReportedPlayerButton(
-            label=message_reported_player_button_label,
-            custom_id=f"message_reported_player_{player_id}",
-            api_client=self.api_client,
-            player_id=player_id,
-            user_lang=user_lang,
-            author_name=author_name,
-            author_player_id=author_player_id,
-            self_report=self_report
-        )
-        self.add_item(message_reported_player_button)
-
-        # Punish button
+        # === ROW 1: PUNISHMENTS (Ordered by severity) ===
+        # Punish button (Warning)
         punish_button_label = get_translation(user_lang, "punish_button_label").format(reported_player_name)
         punish_button = PunishButton(
             label=punish_button_label,
@@ -194,6 +178,7 @@ class Reportview(discord.ui.View):
         )
         self.add_item(remove_from_squad_button)
 
+        # === ROW 2: MODERATE ACTIONS ===
         # Switch Team Now button
         switch_team_now_button_label = get_translation(user_lang, "switch_team_now_button").format(reported_player_name)
         switch_team_now_button = SwitchTeamNowButton(
@@ -222,6 +207,20 @@ class Reportview(discord.ui.View):
         )
         self.add_item(watch_player_button)
 
+        # Message reported player
+        message_reported_player_button_label = get_translation(user_lang, "message_reported_player").format(reported_player_name)
+        message_reported_player_button = MessageReportedPlayerButton(
+            label=message_reported_player_button_label,
+            custom_id=f"message_reported_player_{player_id}",
+            api_client=self.api_client,
+            player_id=player_id,
+            user_lang=user_lang,
+            author_name=author_name,
+            author_player_id=author_player_id,
+            self_report=self_report
+        )
+        self.add_item(message_reported_player_button)
+
         if not self_report:
             # Message Reporter button
             message_player_button_label = get_translation(user_lang, "message_player").format(reported_player_name)
@@ -239,6 +238,7 @@ class Reportview(discord.ui.View):
         unjustified_report_button = Unjustified_Report(author_name, author_player_id, user_lang, self.api_client)
         self.add_item(unjustified_report_button)
 
+        # === ROW 3: ADMIN CONTROLS ===
         # No Action
         no_action_button = No_Action_Button(user_lang, self.api_client)
         self.add_item(no_action_button)
