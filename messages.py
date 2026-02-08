@@ -147,6 +147,7 @@ class Reportview(discord.ui.View):
             player_id=player_id,
             user_lang=user_lang,
             author_player_id=author_player_id,
+            author_name=author_name,
             self_report=self_report
         )
         self.add_item(remove_from_squad_button)
