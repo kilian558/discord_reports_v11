@@ -114,7 +114,7 @@ class MessageReportedPlayerButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang, 
                  author_player_id, author_name, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.grey, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.primary, api_client, player_id,
             user_lang, "Message", author_player_id, author_name, self_report
         )
 
@@ -125,7 +125,7 @@ class PunishButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.blurple, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.danger, api_client, player_id,
             user_lang, "Punish", author_player_id, get_author_name() or "Unknown", self_report
         )
 
@@ -136,7 +136,7 @@ class KickButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, author_name, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.green, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.danger, api_client, player_id,
             user_lang, "Kick", author_player_id, author_name, self_report
         )
 
@@ -147,7 +147,7 @@ class TempBanButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.green, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.danger, api_client, player_id,
             user_lang, "Temp-Ban", author_player_id, get_author_name() or "Unknown", self_report
         )
 
@@ -169,7 +169,7 @@ class RemoveFromSquadButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, author_name, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.gray, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.danger, api_client, player_id,
             user_lang, "Remove-From-Squad", author_player_id, author_name, self_report
         )
 
@@ -180,7 +180,7 @@ class SwitchTeamNowButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, author_name, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.blurple, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.primary, api_client, player_id,
             user_lang, "Switch-Team-Now", author_player_id, author_name, self_report
         )
 
@@ -191,7 +191,7 @@ class SwitchTeamOnDeathButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, author_name, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.blurple, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.primary, api_client, player_id,
             user_lang, "Switch-Team-On-Death", author_player_id, author_name, self_report
         )
 
@@ -202,7 +202,7 @@ class WatchPlayerButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, author_name, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.gray, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.success, api_client, player_id,
             user_lang, "Watch-Player", author_player_id, author_name, self_report
         )
 
@@ -318,7 +318,7 @@ class MessagePlayerButton(discord.ui.Button):
     
     def __init__(self, label: str, custom_id: str, api_client, player_id: str,
                  user_lang: str, self_report: bool):
-        super().__init__(style=discord.ButtonStyle.grey, label=safe_label(label), custom_id=custom_id)
+        super().__init__(style=discord.ButtonStyle.primary, label=safe_label(label), custom_id=custom_id)
         self.api_client = api_client
         self.player_id = player_id
         self.user_lang = user_lang
@@ -369,7 +369,7 @@ class No_Action_Button(discord.ui.Button):
     
     def __init__(self, user_lang: str, api_client):
         label = safe_label(get_translation(user_lang, "wrong_player_reported"))
-        super().__init__(label=label, style=discord.ButtonStyle.grey, custom_id="no_action")
+        super().__init__(label=label, style=discord.ButtonStyle.success, custom_id="no_action")
         self.user_lang = user_lang
         self.api_client = api_client
 
