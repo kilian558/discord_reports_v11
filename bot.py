@@ -58,7 +58,11 @@ class MyBot(commands.Bot):
 
     def extract_server_name(self, embed):
         if embed.footer:
-            return embed.footer.text.strip()
+            # Extract only the server name before the bullet point (•)
+            footer_text = embed.footer.text.strip()
+            if '•' in footer_text:
+                return footer_text.split('•')[0].strip()
+            return footer_text
         return None
 
     def get_api_base_url_from_server_name(self, extracted_server_name):
