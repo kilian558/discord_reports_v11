@@ -1,0 +1,23 @@
+"""
+Configuration constants for the Discord Bot.
+"""
+
+# Modal and View Configuration
+MAX_REASON_LENGTH = 300
+MAX_MESSAGE_LENGTH = 300
+MAX_SELECT_OPTIONS = 25
+DEFAULT_VIEW_TIMEOUT = 600
+EXTENDED_VIEW_TIMEOUT = 3600
+
+# Temp Ban Configuration
+TEMPBAN_WARNING_HOURS = 72
+MAX_TEMPBAN_HOURS = 8760  # 1 year
+
+# UI Constants
+ZERO_WIDTH_SPACE = "\u200b"
+
+# Embed Colors
+COLOR_SUCCESS = 0x00FF00
+COLOR_ERROR = 0xFF0000
+COLOR_WARNING = 0xFFA500
+COLOR_INFO = 0x0000FF

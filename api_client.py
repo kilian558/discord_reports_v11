@@ -273,3 +273,27 @@ class APIClient:
                     return True
         except Exception as e:
             logging.error(f"Error sending punish request: {e}")
+            return False
+
+    async def remove_player_from_squad(self, player_id, reason):
+        """Remove a player from their current squad."""
+        url = f'{self.base_url}/api/remove_player_from_squad'
+        data = {
+            'player_id': player_id,
+            'reason': reason
+        }
+        logging.info(f"Sending remove from squad request to API: {data}")
+
+        try:
+            async with aiohttp.ClientSession(headers=self.headers) as session:
+                async with session.post(url, json=data) as response:
+                    response_text = await response.text()
+                    logging.info(f"API response for remove_player_from_squad: Status {response.status}, Body {response_text}")
+
+                    if response.status != 200:
+                        logging.error(f"Fehler beim Entfernen des Spielers aus dem Squad: {response.status}, Antwort: {response_text}")
+                        return False
+                    return True
+        except Exception as e:
+            logging.error(f"Error sending remove from squad request: {e}")
+            return False
