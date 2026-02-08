@@ -1,4 +1,5 @@
 import aiohttp
+import ssl
 import logging
 import json
 
@@ -9,9 +10,14 @@ class APIClient:
         self.session = None
         self.api_version = ""
 
+    def _get_ssl_connector(self):
+        """Returns a TCP connector with SSL verification disabled for self-signed certificates."""
+        return aiohttp.TCPConnector(ssl=False)
+
     async def create_session(self):
         if not self.session:
-            self.session = aiohttp.ClientSession(headers=self.headers)
+            # Disable SSL verification for self-signed certificates
+            self.session = aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector())
 
     async def close_session(self):
         if self.session:
@@ -35,7 +41,7 @@ class APIClient:
     async def get_player_data(self, player_id):
         url = f'{self.base_url}/api/get_live_game_stats'
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.get(url) as response:
                     if response.status != 200:
                         return None
@@ -46,7 +52,7 @@ class APIClient:
     async def get_detailed_players(self):
         url = f'{self.base_url}/api/get_detailed_players'
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.get(url) as response:
                     response.raise_for_status()
                     return await response.json()
@@ -65,7 +71,7 @@ class APIClient:
         logging.info(f"Sending kick request to API: {data}")
 
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.post(url, json=data) as response:
                     response_text = await response.text()
                     logging.info(f"API response for do_kick: Status {response.status}, Body {response_text}")
@@ -82,7 +88,7 @@ class APIClient:
     async def get_player_by_steam_id(self, player_id):
         url = f'{self.base_url}/api/get_player_profile?player_id={player_id}'
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.get(url) as response:
                     response.raise_for_status()
                     data = await response.json()
@@ -97,7 +103,7 @@ class APIClient:
     async def get_player_by_id(self, player_id):
         url = f'{self.base_url}/api/get_player_profile?player_id={player_id}'
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.get(url) as response:
                     response.raise_for_status()
                     data = await response.json()
@@ -111,7 +117,7 @@ class APIClient:
     async def get_players(self):
         url = f'{self.base_url}/api/get_players'
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.get(url) as response:
                     response.raise_for_status()
                     return await response.json()
@@ -195,7 +201,7 @@ class APIClient:
             "message": message
         }
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.post(url, json=data) as response:
                     response.raise_for_status()
                     return await response.json()
@@ -215,7 +221,7 @@ class APIClient:
             params["filter_player"] = filter_player
 
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.get(url, params=params) as response:
                     response.raise_for_status()
                     data = await response.json()
@@ -231,7 +237,7 @@ class APIClient:
             "comment": comment
         }
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.post(url, json=data) as response:
                     response.raise_for_status()
                     return await response.json()
@@ -242,7 +248,7 @@ class APIClient:
     async def get_all_standard_message_config(self):
         url = f'{self.base_url}/api/get_all_standard_message_config'
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.get(url) as response:
                     response.raise_for_status()
                     data = await response.json()
@@ -262,7 +268,7 @@ class APIClient:
         logging.info(f"Sending punish request to API: {data}")
 
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.post(url, json=data) as response:
                     response_text = await response.text()
                     logging.info(f"API response for punish: Status {response.status}, Body {response_text}")
@@ -285,7 +291,7 @@ class APIClient:
         logging.info(f"Sending remove from squad request to API: {data}")
 
         try:
-            async with aiohttp.ClientSession(headers=self.headers) as session:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
                 async with session.post(url, json=data) as response:
                     response_text = await response.text()
                     logging.info(f"API response for remove_player_from_squad: Status {response.status}, Body {response_text}")
