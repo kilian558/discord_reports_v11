@@ -136,7 +136,7 @@ class KickButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, author_name, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.danger, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.primary, api_client, player_id,
             user_lang, "Kick", author_player_id, author_name, self_report
         )
 
