@@ -114,7 +114,7 @@ class MessageReportedPlayerButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang, 
                  author_player_id, author_name, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.primary, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.secondary, api_client, player_id,
             user_lang, "Message", author_player_id, author_name, self_report
         )
 
@@ -125,7 +125,7 @@ class PunishButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.danger, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.primary, api_client, player_id,
             user_lang, "Punish", author_player_id, get_author_name() or "Unknown", self_report
         )
 
@@ -147,7 +147,7 @@ class TempBanButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.danger, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.primary, api_client, player_id,
             user_lang, "Temp-Ban", author_player_id, get_author_name() or "Unknown", self_report
         )
 
@@ -169,7 +169,7 @@ class RemoveFromSquadButton(BaseActionButton):
     def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
                  author_player_id, author_name, self_report):
         super().__init__(
-            label, custom_id, discord.ButtonStyle.danger, api_client, player_id,
+            label, custom_id, discord.ButtonStyle.primary, api_client, player_id,
             user_lang, "Remove-From-Squad", author_player_id, author_name, self_report
         )
 
@@ -318,7 +318,7 @@ class MessagePlayerButton(discord.ui.Button):
     
     def __init__(self, label: str, custom_id: str, api_client, player_id: str,
                  user_lang: str, self_report: bool):
-        super().__init__(style=discord.ButtonStyle.primary, label=safe_label(label), custom_id=custom_id)
+        super().__init__(style=discord.ButtonStyle.secondary, label=safe_label(label), custom_id=custom_id)
         self.api_client = api_client
         self.player_id = player_id
         self.user_lang = user_lang
@@ -341,7 +341,7 @@ class Unjustified_Report(discord.ui.Button):
     
     def __init__(self, author_name: str, author_id: Optional[str], user_lang: str, api_client):
         label = safe_label(get_translation(user_lang, "unjustified_report"))
-        super().__init__(style=discord.ButtonStyle.grey, label=label, custom_id="unjustified_report")
+        super().__init__(style=discord.ButtonStyle.secondary, label=label, custom_id="unjustified_report")
         self.author_name = author_name
         self.author_id = author_id
         self.user_lang = user_lang
@@ -389,7 +389,7 @@ class Show_logs_button(discord.ui.Button):
     """Button to retrieve and display player logs."""
     
     def __init__(self, view, player_name: str, custom_id: str, user_lang: str):
-        super().__init__(style=discord.ButtonStyle.grey, label=safe_label("Logs"), emoji="📄", custom_id=custom_id)
+        super().__init__(style=discord.ButtonStyle.secondary, label=safe_label("Logs"), emoji="📄", custom_id=custom_id)
         self.api_client = view.api_client
         self.player_name = player_name
         self.msg_view = view
@@ -421,7 +421,7 @@ class Manual_process(discord.ui.Button):
     
     def __init__(self, user_lang: str, api_client):
         label = safe_label(get_translation(user_lang, "button_manual_process"))
-        super().__init__(label=label, style=discord.ButtonStyle.grey, custom_id="manual_process")
+        super().__init__(label=label, style=discord.ButtonStyle.secondary, custom_id="manual_process")
         self.user_lang = user_lang
         self.api_client = api_client
 
@@ -460,7 +460,7 @@ class Finish_Report_Button(discord.ui.View):
     def add_buttons(self):
         """Add finish button to view."""
         button_label = safe_label(get_translation(self.user_lang, "report_finished"))
-        button = Button(label=button_label, style=discord.ButtonStyle.green, custom_id="finished_processing")
+        button = Button(label=button_label, style=discord.ButtonStyle.success, custom_id="finished_processing")
         button.callback = self.button_callback
         self.add_item(button)
 
@@ -729,7 +729,7 @@ class Confirm_Action_Button(discord.ui.View):
     def add_buttons(self):
         """Add confirm button to view."""
         button_label = safe_label(get_translation(self.user_lang, "confirm"))
-        button = Button(label=button_label, style=discord.ButtonStyle.green, custom_id="confirm_action")
+        button = Button(label=button_label, style=discord.ButtonStyle.success, custom_id="confirm_action")
         button.callback = self.button_callback
         self.add_item(button)
 
