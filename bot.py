@@ -1,4 +1,3 @@
-# Importing necessary libraries for the bot and API interaction
 import os
 import re
 import discord
@@ -77,6 +76,16 @@ class MyBot(commands.Bot):
         # Prüfen Sie zuerst, ob die Nachricht von Ihrem Bot oder von einem unerlaubten Kanal kommt.
         if message.author == self.user or message.channel.id != ALLOWED_CHANNEL_ID:
             return
+
+        # Debug: Zeige alle eingehenden Nachrichten
+        logging.info(f"=== NEW MESSAGE ===")
+        logging.info(f"Author: {message.author} | Channel ID: {message.channel.id}")
+        logging.info(f"Has embeds: {len(message.embeds) > 0}")
+        if message.embeds:
+            embed = message.embeds[0]
+            logging.info(f"Embed Author: {embed.author.name if embed.author else 'None'}")
+            logging.info(f"Embed Footer: {embed.footer.text if embed.footer else 'None'}")
+            logging.info(f"Embed Description: {embed.description[:100] if embed.description else 'None'}")
 
         server_name = None
         api_base_url = None
