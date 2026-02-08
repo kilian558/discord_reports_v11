@@ -174,6 +174,61 @@ class RemoveFromSquadButton(BaseActionButton):
         )
 
 
+class SwitchTeamNowButton(BaseActionButton):
+    """Button to switch a player to the other team immediately."""
+    
+    def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
+                 author_player_id, author_name, self_report):
+        super().__init__(
+            label, custom_id, discord.ButtonStyle.blurple, api_client, player_id,
+            user_lang, "Switch-Team-Now", author_player_id, author_name, self_report
+        )
+
+
+class SwitchTeamOnDeathButton(BaseActionButton):
+    """Button to switch a player to the other team on their next death."""
+    
+    def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
+                 author_player_id, author_name, self_report):
+        super().__init__(
+            label, custom_id, discord.ButtonStyle.blurple, api_client, player_id,
+            user_lang, "Switch-Team-On-Death", author_player_id, author_name, self_report
+        )
+
+
+class WatchPlayerButton(BaseActionButton):
+    """Button to add a player to the watchlist."""
+    
+    def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
+                 author_player_id, author_name, self_report):
+        super().__init__(
+            label, custom_id, discord.ButtonStyle.gray, api_client, player_id,
+            user_lang, "Watch-Player", author_player_id, author_name, self_report
+        )
+
+
+class UnwatchPlayerButton(BaseActionButton):
+    """Button to remove a player from the watchlist."""
+    
+    def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
+                 author_player_id, author_name, self_report):
+        super().__init__(
+            label, custom_id, discord.ButtonStyle.gray, api_client, player_id,
+            user_lang, "Unwatch-Player", author_player_id, author_name, self_report
+        )
+
+
+class AddCommentButton(BaseActionButton):
+    """Button to add a comment/note about a player."""
+    
+    def __init__(self, label: str, custom_id: str, api_client, player_id, user_lang,
+                 author_player_id, author_name, self_report):
+        super().__init__(
+            label, custom_id, discord.ButtonStyle.gray, api_client, player_id,
+            user_lang, "Add-Comment", author_player_id, author_name, self_report
+        )
+
+
 
 class MessagePlayerModal(discord.ui.Modal):
     """Modal for sending a direct message to a player."""
@@ -765,6 +820,31 @@ async def perform_action(
             )
         elif action == "Remove-From-Squad":
             result = await ActionHandler.handle_remove_from_squad(
+                player_name, player_id, reason, user_lang, api_client,
+                interaction, original_report_message
+            )
+        elif action == "Switch-Team-Now":
+            result = await ActionHandler.handle_switch_team_now(
+                player_name, player_id, user_lang, api_client,
+                interaction, original_report_message
+            )
+        elif action == "Switch-Team-On-Death":
+            result = await ActionHandler.handle_switch_team_on_death(
+                player_name, player_id, user_lang, api_client,
+                interaction, original_report_message
+            )
+        elif action == "Watch-Player":
+            result = await ActionHandler.handle_watch_player(
+                player_name, player_id, reason, user_lang, api_client,
+                interaction, original_report_message
+            )
+        elif action == "Unwatch-Player":
+            result = await ActionHandler.handle_unwatch_player(
+                player_name, player_id, user_lang, api_client,
+                interaction, original_report_message
+            )
+        elif action == "Add-Comment":
+            result = await ActionHandler.handle_add_comment(
                 player_name, player_id, reason, user_lang, api_client,
                 interaction, original_report_message
             )

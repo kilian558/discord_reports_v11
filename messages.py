@@ -2,7 +2,8 @@ import discord
 from discord.ui import View, Button
 from helpers import get_translation, get_author_name, get_playerid_from_name
 from modals import TempBanButton, MessagePlayerButton, MessageReportedPlayerButton, Show_logs_button, PermaBanButton, \
-    PunishButton, KickButton, Unjustified_Report, No_Action_Button, Manual_process, RemoveFromSquadButton
+    PunishButton, KickButton, Unjustified_Report, No_Action_Button, Manual_process, RemoveFromSquadButton, \
+    SwitchTeamNowButton, SwitchTeamOnDeathButton, WatchPlayerButton, UnwatchPlayerButton, AddCommentButton
 
 
 async def unitreportembed(player_additional_data, user_lang, unit_name, roles, team, player):
@@ -151,6 +152,76 @@ class Reportview(discord.ui.View):
             self_report=self_report
         )
         self.add_item(remove_from_squad_button)
+
+        # Switch Team Now button
+        switch_team_now_button_label = get_translation(user_lang, "switch_team_now_button").format(reported_player_name)
+        switch_team_now_button = SwitchTeamNowButton(
+            label=switch_team_now_button_label,
+            custom_id=f"switch_team_now_{player_id}",
+            api_client=self.api_client,
+            player_id=player_id,
+            user_lang=user_lang,
+            author_player_id=author_player_id,
+            author_name=author_name,
+            self_report=self_report
+        )
+        self.add_item(switch_team_now_button)
+
+        # Switch Team On Death button
+        switch_team_on_death_button_label = get_translation(user_lang, "switch_team_on_death_button").format(reported_player_name)
+        switch_team_on_death_button = SwitchTeamOnDeathButton(
+            label=switch_team_on_death_button_label,
+            custom_id=f"switch_team_on_death_{player_id}",
+            api_client=self.api_client,
+            player_id=player_id,
+            user_lang=user_lang,
+            author_player_id=author_player_id,
+            author_name=author_name,
+            self_report=self_report
+        )
+        self.add_item(switch_team_on_death_button)
+
+        # Watch Player button
+        watch_player_button_label = get_translation(user_lang, "watch_player_button").format(reported_player_name)
+        watch_player_button = WatchPlayerButton(
+            label=watch_player_button_label,
+            custom_id=f"watch_player_{player_id}",
+            api_client=self.api_client,
+            player_id=player_id,
+            user_lang=user_lang,
+            author_player_id=author_player_id,
+            author_name=author_name,
+            self_report=self_report
+        )
+        self.add_item(watch_player_button)
+
+        # Unwatch Player button
+        unwatch_player_button_label = get_translation(user_lang, "unwatch_player_button").format(reported_player_name)
+        unwatch_player_button = UnwatchPlayerButton(
+            label=unwatch_player_button_label,
+            custom_id=f"unwatch_player_{player_id}",
+            api_client=self.api_client,
+            player_id=player_id,
+            user_lang=user_lang,
+            author_player_id=author_player_id,
+            author_name=author_name,
+            self_report=self_report
+        )
+        self.add_item(unwatch_player_button)
+
+        # Add Comment button
+        add_comment_button_label = get_translation(user_lang, "add_comment_button").format(reported_player_name)
+        add_comment_button = AddCommentButton(
+            label=add_comment_button_label,
+            custom_id=f"add_comment_{player_id}",
+            api_client=self.api_client,
+            player_id=player_id,
+            user_lang=user_lang,
+            author_player_id=author_player_id,
+            author_name=author_name,
+            self_report=self_report
+        )
+        self.add_item(add_comment_button)
 
         if not self_report:
             # Message Reporter button

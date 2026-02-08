@@ -303,3 +303,135 @@ class APIClient:
         except Exception as e:
             logging.error(f"Error sending remove from squad request: {e}")
             return False
+
+    async def switch_player_now(self, player_id):
+        """Switch a player to the other team immediately."""
+        url = f'{self.base_url}/api/switch_player_now'
+        data = {'player_id': player_id}
+        logging.info(f"Sending switch player now request to API: {data}")
+
+        try:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
+                async with session.post(url, json=data) as response:
+                    response_text = await response.text()
+                    logging.info(f"API response for switch_player_now: Status {response.status}, Body {response_text}")
+
+                    if response.status != 200:
+                        logging.error(f"Fehler beim Team-Wechsel: {response.status}, Antwort: {response_text}")
+                        return False
+                    return True
+        except Exception as e:
+            logging.error(f"Error sending switch player now request: {e}")
+            return False
+
+    async def switch_player_on_death(self, player_id, by="Admin"):
+        """Switch a player to the other team on their next death."""
+        url = f'{self.base_url}/api/switch_player_on_death'
+        data = {
+            'player_id': player_id,
+            'by': by
+        }
+        logging.info(f"Sending switch player on death request to API: {data}")
+
+        try:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
+                async with session.post(url, json=data) as response:
+                    response_text = await response.text()
+                    logging.info(f"API response for switch_player_on_death: Status {response.status}, Body {response_text}")
+
+                    if response.status != 200:
+                        logging.error(f"Fehler beim Team-Wechsel on death: {response.status}, Antwort: {response_text}")
+                        return False
+                    return True
+        except Exception as e:
+            logging.error(f"Error sending switch player on death request: {e}")
+            return False
+
+    async def watch_player(self, player_id, reason, by="Admin", player_name=None):
+        """Add a player to the watchlist."""
+        url = f'{self.base_url}/api/watch_player'
+        data = {
+            'player_id': player_id,
+            'reason': reason,
+            'by': by,
+            'player_name': player_name
+        }
+        logging.info(f"Sending watch player request to API: {data}")
+
+        try:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
+                async with session.post(url, json=data) as response:
+                    response_text = await response.text()
+                    logging.info(f"API response for watch_player: Status {response.status}, Body {response_text}")
+
+                    if response.status != 200:
+                        logging.error(f"Fehler beim Hinzufügen zur Watchlist: {response.status}, Antwort: {response_text}")
+                        return False
+                    return True
+        except Exception as e:
+            logging.error(f"Error sending watch player request: {e}")
+            return False
+
+    async def unwatch_player(self, player_id):
+        """Remove a player from the watchlist."""
+        url = f'{self.base_url}/api/unwatch_player'
+        data = {'player_id': player_id}
+        logging.info(f"Sending unwatch player request to API: {data}")
+
+        try:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
+                async with session.post(url, json=data) as response:
+                    response_text = await response.text()
+                    logging.info(f"API response for unwatch_player: Status {response.status}, Body {response_text}")
+
+                    if response.status != 200:
+                        logging.error(f"Fehler beim Entfernen von der Watchlist: {response.status}, Antwort: {response_text}")
+                        return False
+                    return True
+        except Exception as e:
+            logging.error(f"Error sending unwatch player request: {e}")
+            return False
+
+    async def post_player_comment(self, player_id, comment, by="Admin"):
+        """Post a comment/note about a player."""
+        url = f'{self.base_url}/api/post_player_comment'
+        data = {
+            'player_id': player_id,
+            'comment': comment,
+            'by': by
+        }
+        logging.info(f"Sending post player comment request to API: {data}")
+
+        try:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
+                async with session.post(url, json=data) as response:
+                    response_text = await response.text()
+                    logging.info(f"API response for post_player_comment: Status {response.status}, Body {response_text}")
+
+                    if response.status != 200:
+                        logging.error(f"Fehler beim Hinzufügen des Kommentars: {response.status}, Antwort: {response_text}")
+                        return False
+                    return True
+        except Exception as e:
+            logging.error(f"Error sending post player comment request: {e}")
+            return False
+
+    async def get_player_profile(self, player_id, num_sessions=10):
+        """Get detailed player profile including sessions, comments, flags, bans."""
+        url = f'{self.base_url}/api/get_player_profile'
+        params = {
+            'player_id': player_id,
+            'num_sessions': num_sessions
+        }
+        
+        try:
+            async with aiohttp.ClientSession(headers=self.headers, connector=self._get_ssl_connector()) as session:
+                async with session.get(url, params=params) as response:
+                    if response.status != 200:
+                        logging.error(f"Fehler beim Abrufen des Spielerprofils: {response.status}")
+                        return None
+                    data = await response.json()
+                    return data.get('result')
+        except Exception as e:
+            logging.error(f"Error fetching player profile: {e}")
+            return None

@@ -402,3 +402,154 @@ class ActionHandler:
                 success=False,
                 message=get_translation(user_lang, "error_removing_from_squad") if "error_removing_from_squad" in get_translation(user_lang, "error_removing_from_squad") else "Error removing player from squad"
             )
+
+    @staticmethod
+    async def handle_switch_team_now(
+        player_name: str,
+        player_id: str,
+        user_lang: str,
+        api_client,
+        interaction: discord.Interaction,
+        original_report_message: Optional[discord.Message] = None
+    ) -> ActionResult:
+        """
+        Switches a player to the other team immediately.
+        """
+        try:
+            success = await api_client.switch_player_now(player_id)
+            
+            if success:
+                confirmation_message = get_translation(user_lang, "player_switched_team_now").format(player_name)
+                modlog = get_translation(user_lang, "log_switch_team_now").format(
+                    interaction.user.display_name, player_name
+                )
+                return ActionResult(success=True, message=confirmation_message, modlog=modlog)
+            else:
+                return ActionResult(success=False, message=get_translation(user_lang, "error_switching_team"))
+                
+        except Exception as e:
+            logger.error(f"Error switching team: {e}", exc_info=True)
+            return ActionResult(success=False, message=get_translation(user_lang, "error_switching_team"))
+
+    @staticmethod
+    async def handle_switch_team_on_death(
+        player_name: str,
+        player_id: str,
+        user_lang: str,
+        api_client,
+        interaction: discord.Interaction,
+        original_report_message: Optional[discord.Message] = None
+    ) -> ActionResult:
+        """
+        Switches a player to the other team on their next death.
+        """
+        try:
+            success = await api_client.switch_player_on_death(player_id, by=interaction.user.display_name)
+            
+            if success:
+                confirmation_message = get_translation(user_lang, "player_switched_team_on_death").format(player_name)
+                modlog = get_translation(user_lang, "log_switch_team_on_death").format(
+                    interaction.user.display_name, player_name
+                )
+                return ActionResult(success=True, message=confirmation_message, modlog=modlog)
+            else:
+                return ActionResult(success=False, message=get_translation(user_lang, "error_switching_team"))
+                
+        except Exception as e:
+            logger.error(f"Error switching team on death: {e}", exc_info=True)
+            return ActionResult(success=False, message=get_translation(user_lang, "error_switching_team"))
+
+    @staticmethod
+    async def handle_watch_player(
+        player_name: str,
+        player_id: str,
+        reason: str,
+        user_lang: str,
+        api_client,
+        interaction: discord.Interaction,
+        original_report_message: Optional[discord.Message] = None
+    ) -> ActionResult:
+        """
+        Adds a player to the watchlist.
+        """
+        try:
+            success = await api_client.watch_player(
+                player_id, reason, by=interaction.user.display_name, player_name=player_name
+            )
+            
+            if success:
+                confirmation_message = get_translation(user_lang, "player_added_to_watchlist").format(
+                    player_name, reason
+                )
+                modlog = get_translation(user_lang, "log_watch_player").format(
+                    interaction.user.display_name, player_name, reason
+                )
+                return ActionResult(success=True, message=confirmation_message, modlog=modlog)
+            else:
+                return ActionResult(success=False, message=get_translation(user_lang, "error_watch_player"))
+                
+        except Exception as e:
+            logger.error(f"Error watching player: {e}", exc_info=True)
+            return ActionResult(success=False, message=get_translation(user_lang, "error_watch_player"))
+
+    @staticmethod
+    async def handle_unwatch_player(
+        player_name: str,
+        player_id: str,
+        user_lang: str,
+        api_client,
+        interaction: discord.Interaction,
+        original_report_message: Optional[discord.Message] = None
+    ) -> ActionResult:
+        """
+        Removes a player from the watchlist.
+        """
+        try:
+            success = await api_client.unwatch_player(player_id)
+            
+            if success:
+                confirmation_message = get_translation(user_lang, "player_removed_from_watchlist").format(player_name)
+                modlog = get_translation(user_lang, "log_unwatch_player").format(
+                    interaction.user.display_name, player_name
+                )
+                return ActionResult(success=True, message=confirmation_message, modlog=modlog)
+            else:
+                return ActionResult(success=False, message=get_translation(user_lang, "error_unwatch_player"))
+                
+        except Exception as e:
+            logger.error(f"Error unwatching player: {e}", exc_info=True)
+            return ActionResult(success=False, message=get_translation(user_lang, "error_unwatch_player"))
+
+    @staticmethod
+    async def handle_add_comment(
+        player_name: str,
+        player_id: str,
+        comment: str,
+        user_lang: str,
+        api_client,
+        interaction: discord.Interaction,
+        original_report_message: Optional[discord.Message] = None
+    ) -> ActionResult:
+        """
+        Adds a comment/note about a player.
+        """
+        try:
+            success = await api_client.post_player_comment(
+                player_id, comment, by=interaction.user.display_name
+            )
+            
+            if success:
+                confirmation_message = get_translation(user_lang, "comment_added_successfully").format(
+                    player_name, comment
+                )
+                modlog = get_translation(user_lang, "log_add_comment").format(
+                    interaction.user.display_name, player_name, comment
+                )
+                return ActionResult(success=True, message=confirmation_message, modlog=modlog)
+            else:
+                return ActionResult(success=False, message=get_translation(user_lang, "error_add_comment"))
+                
+        except Exception as e:
+            logger.error(f"Error adding comment: {e}", exc_info=True)
+            return ActionResult(success=False, message=get_translation(user_lang, "error_add_comment"))
+
