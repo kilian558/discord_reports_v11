@@ -86,7 +86,12 @@
         "insults_not_tolerated": "Insults are not tolerated",
         "cheating": "Cheating is not tolerated",
         "spamming": "Spamming is not tolerated",
-        "afk": "You have been kicked for inactivity"
+        "afk": "You have been kicked for inactivity",
+        "remove_from_squad_player": "🚫Squad",
+        "player_removed_from_squad_successfully": "{} was removed from squad",
+        "error_removing_from_squad": "Error removing player from squad",
+        "log_remove_from_squad": "({}) removed {} from squad: {}",
+        "message_to_player_removed_from_squad": "You have been removed from your squad. Reason: {}"
     
     },
     "de": {
@@ -207,6 +212,11 @@
     	"log_kick": "({}) hat {} gekickt. Grund: {}",
     	"log_tempban": "({}) hat {} temporär für {} Stunden gebannt. Grund: {}",
     	"log_perma": "({}) hat {} permanent gebannt. Grund: {}",
-        "afk": "Du wurdest wegen Inaktivität gekickt"
+        "afk": "Du wurdest wegen Inaktivität gekickt",
+        "remove_from_squad_player": "🚫Squad",
+        "player_removed_from_squad_successfully": "{} wurde aus dem Squad entfernt",
+        "error_removing_from_squad": "Fehler beim Entfernen des Spielers aus dem Squad",
+        "log_remove_from_squad": "({}) hat {} aus dem Squad entfernt: {}",
+        "message_to_player_removed_from_squad": "Du wurdest aus deinem Squad entfernt. Grund: {}"
     }
 }
