@@ -145,8 +145,16 @@ class AIClient:
             async with session.post(self.base_url, headers=headers, json=payload) as response:
                 text = await response.text()
                 if response.status != 200:
-                    logger.error("Grok API error %s: %s", response.status, text)
-                    raise RuntimeError(f"Grok API error {response.status}")
+                    message = text
+                    try:
+                        error_payload = json.loads(text)
+                        if isinstance(error_payload, dict):
+                            err = error_payload.get("error") or error_payload
+                            message = err.get("message", err) if isinstance(err, dict) else err
+                    except Exception:
+                        pass
+                    logger.error("Grok API error %s: %s", response.status, message)
+                    raise RuntimeError(f"Grok API error {response.status}: {message}")
 
         data = self._extract_json(text)
         if not data:

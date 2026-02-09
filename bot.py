@@ -376,7 +376,7 @@ class MyBot(commands.Bot):
             if embed:
                 embed.add_field(
                     name=get_translation(user_lang, "ai_recommendation_title"),
-                    value=get_translation(user_lang, "ai_recommendation_failed"),
+                    value=f"{get_translation(user_lang, 'ai_recommendation_failed')} ({e})",
                     inline=False
                 )
             return None
