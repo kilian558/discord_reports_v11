@@ -53,6 +53,39 @@ async def _safe_send(interaction: discord.Interaction, content: str, ephemeral: 
         await interaction.response.send_message(content, ephemeral=ephemeral)
 
 
+def _normalize_ai_message(text: str) -> str:
+    if not text:
+        return text
+
+    discord_link = "https://discord.gg/gbg-hll"
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    cleaned = []
+
+    for line in lines:
+        if line.lower().startswith("betreff:"):
+            continue
+        cleaned.append(line.replace(discord_link, "").strip())
+
+    def _append_link(line: str) -> str:
+        line = line.rstrip()
+        if discord_link in line:
+            return line
+        return f"{line} {discord_link}".strip()
+
+    appended = False
+    for i, line in enumerate(cleaned):
+        lower = line.lower()
+        if "melde dich" in lower or "contact" in lower:
+            cleaned[i] = _append_link(line)
+            appended = True
+            break
+
+    if not appended and cleaned:
+        cleaned[-1] = _append_link(cleaned[-1])
+
+    return "\n".join(cleaned).strip()
+
+
 
 
 
@@ -273,9 +306,7 @@ class ApplyAIRecommendationButton(discord.ui.Button):
             action_reason = recommendation.get("action_reason") or recommendation.get("recommendation") or "AI"
             if action == "Message-Reporter" and reply_suggestion:
                 action_reason = reply_suggestion
-            prefix = "KI" if self.user_lang == "de" else "AI"
-            if action_reason and not action_reason.lower().startswith(("ai", "ki")):
-                action_reason = f"{prefix}: {action_reason}"
+            action_reason = _normalize_ai_message(action_reason)
             duration = recommendation.get("duration_hours")
             if isinstance(duration, str) and duration.isdigit():
                 duration = int(duration)

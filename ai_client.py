@@ -34,6 +34,7 @@ class AIClient:
             "Return a single JSON object and nothing else."
         )
 
+        detected_lang = self._detect_language(report_text)
         user_prompt = (
             "Analyze the report and recommend a moderation action.\n"
             "Allowed actions:\n"
@@ -101,7 +102,7 @@ class AIClient:
             "\n"
             "Style guidance for action_reason:\n"
             "- Write a short, clear, polite notice addressed to the reported player by name.\n"
-            "- Include: subject line (Betreff), greeting, reason, duration (if any), and a polite closing.\n"
+            "- Include: greeting, reason, duration (if any), and a polite closing.\n"
             "- Explain what happened and why the action was taken.\n"
             "- For severe offenses, be firm and clear, not lenient.\n"
             "- Keep it factual, non-aggressive, and player-specific.\n"
@@ -117,6 +118,7 @@ class AIClient:
             "- The reply is sent in-game; do not ask for screenshots or clips.\n"
             "- reply_suggestion must include https://discord.gg/gbg-hll and must NOT include gbg-hll.com.\n"
             "- Use the report language (German only if clearly 100% German).\n"
+            "- Use the same structured tone: greeting, request/answer, polite closing.\n"
             "\n"
             "Examples (structure only, do not copy text):\n"
             "- Mild insult -> Punish, short warning to player.\n"
@@ -137,11 +139,13 @@ class AIClient:
             "- If reply_suggestion exists, set action to Message-Reporter.\n"
             "- Use a single language per field; do not mix German and English in the same field.\n"
             "- Teamkill rule: KICK only if teamkills >= 2. Do NOT kick for a single teamkill.\n"
+            "- If the report text is English, reply_suggestion must be English.\n"
+            "- If the report text is German, reply_suggestion must be German.\n"
             "\n"
             f"Reported player: {reported_player_name}\n"
             f"Report text: {report_text}\n"
             f"Player stats: {player_stats if player_stats else 'unknown'}\n"
-            f"Language: {user_lang}\n"
+            f"Detected report language: {detected_lang}\n"
         )
 
         payload = {
@@ -203,3 +207,22 @@ class AIClient:
                 return json.loads(match.group(0))
             except json.JSONDecodeError:
                 return None
+
+    def _detect_language(self, text: str) -> str:
+        if not text:
+            return "en"
+        sample = text.lower()
+        de_markers = [
+            " der ", " die ", " das ", " und ", " nicht ", " bitte ",
+            " wegen ", " aber ", " auch ", " du ", " dein ", " eine ",
+        ]
+        en_markers = [
+            " the ", " and ", " not ", " please ", " because ", " but ",
+            " also ", " you ", " your ", " a ", " an ",
+        ]
+        de_score = sum(1 for m in de_markers if m in sample)
+        en_score = sum(1 for m in en_markers if m in sample)
+        for ch in "äöüß":
+            if ch in sample:
+                de_score += 2
+        return "de" if de_score >= en_score else "en"

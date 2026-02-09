@@ -382,11 +382,36 @@ class MyBot(commands.Bot):
                             f"• Verstoß: {violation}"
                         )
 
-                    ban_reason = (recommendation.get("action_reason") or "").strip()
-                    if ban_reason:
+                    def _normalize_ban_reason(text: str) -> str:
+                        if not text:
+                            return text
                         discord_link = "https://discord.gg/gbg-hll"
-                        ban_reason = ban_reason.replace(discord_link, "").strip()
-                        ban_reason = f"{ban_reason} {discord_link}".strip()
+                        lines = [line.strip() for line in text.splitlines() if line.strip()]
+                        cleaned = []
+                        for line in lines:
+                            if line.lower().startswith("betreff:"):
+                                continue
+                            cleaned.append(line.replace(discord_link, "").strip())
+
+                        def _append_link(line: str) -> str:
+                            if discord_link in line:
+                                return line
+                            return f"{line} {discord_link}".strip()
+
+                        appended = False
+                        for i, line in enumerate(cleaned):
+                            lower = line.lower()
+                            if "melde dich" in lower or "contact" in lower:
+                                cleaned[i] = _append_link(line)
+                                appended = True
+                                break
+                        if not appended and cleaned:
+                            cleaned[-1] = _append_link(cleaned[-1])
+
+                        return "\n".join(cleaned).strip()
+
+                    ban_reason = _normalize_ban_reason((recommendation.get("action_reason") or "").strip())
+                    if ban_reason:
                         lines.append(
                             f"• Banngrund: {ban_reason}"
                         )
