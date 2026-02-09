@@ -376,28 +376,20 @@ class MyBot(commands.Bot):
                         f"• {get_translation(admin_lang, 'ai_recommendation_reply')}: {reply_suggestion}"
                     )
                 else:
-                    reason = recommendation.get("action_reason", "")
-                    rationale = recommendation.get("rationale", "")
-                    reason_block = reason
-                    if rationale:
-                        reason_block = f"{reason} {rationale}".strip() if reason else rationale
-                    if reason_block:
+                    violation = (recommendation.get("rationale") or "").strip()
+                    if violation:
+                        lines.append(
+                            f"• Verstoß: {violation}"
+                        )
+
+                    ban_reason = (recommendation.get("action_reason") or "").strip()
+                    if ban_reason:
                         discord_link = "https://discord.gg/gbg-hll"
-                        suffix = "gbg-hll.com"
-                        if discord_link in reason_block or suffix in reason_block:
-                            reason_block = reason_block.replace(discord_link, "").replace(suffix, "")
-                            reason_block = " ".join(reason_block.split())
-                            reason_block = f"{reason_block} {discord_link} {suffix}".strip()
-                        # Try to keep Verstoß + Maßnahme as two sentences.
-                        if ". " in reason_block:
-                            parts = reason_block.split(". ")
-                            if len(parts) >= 2:
-                                violation = parts[0].strip().rstrip(".")
-                                measure = ". ".join(parts[1:]).strip()
-                                reason_block = f"Verstoß: {violation}.\nMaßnahme: {measure}"
-                    lines.append(
-                        f"• {get_translation(admin_lang, 'ai_recommendation_reason')}: {reason_block}"
-                    )
+                        ban_reason = ban_reason.replace(discord_link, "").strip()
+                        ban_reason = f"{ban_reason} {discord_link}".strip()
+                        lines.append(
+                            f"• Banngrund: {ban_reason}"
+                        )
 
                 embed.add_field(
                     name=get_translation(admin_lang, "ai_recommendation_title"),
