@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -164,21 +165,31 @@ class AIClient:
             "Content-Type": "application/json",
         }
 
-        timeout = aiohttp.ClientTimeout(total=30)
+        timeout = aiohttp.ClientTimeout(total=60)
+        max_attempts = int(os.getenv("GROK_MAX_ATTEMPTS", "2"))
+        retry_backoff = float(os.getenv("GROK_RETRY_BACKOFF_SECONDS", "1.5"))
+        text = ""
         async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.post(self.base_url, headers=headers, json=payload) as response:
-                text = await response.text()
-                if response.status != 200:
-                    message = text
-                    try:
-                        error_payload = json.loads(text)
-                        if isinstance(error_payload, dict):
-                            err = error_payload.get("error") or error_payload
-                            message = err.get("message", err) if isinstance(err, dict) else err
-                    except Exception:
-                        pass
-                    logger.error("Grok API error %s: %s", response.status, message)
-                    raise RuntimeError(f"Grok API error {response.status}: {message}")
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    async with session.post(self.base_url, headers=headers, json=payload) as response:
+                        text = await response.text()
+                        if response.status != 200:
+                            message = text
+                            try:
+                                error_payload = json.loads(text)
+                                if isinstance(error_payload, dict):
+                                    err = error_payload.get("error") or error_payload
+                                    message = err.get("message", err) if isinstance(err, dict) else err
+                            except Exception:
+                                pass
+                            logger.error("Grok API error %s: %s", response.status, message)
+                            raise RuntimeError(f"Grok API error {response.status}: {message}")
+                        break
+                except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
+                    if attempt >= max_attempts:
+                        raise RuntimeError(f"Grok request failed: {exc.__class__.__name__}") from exc
+                    await asyncio.sleep(retry_backoff * attempt)
 
         data = self._extract_json(text)
         if not data:

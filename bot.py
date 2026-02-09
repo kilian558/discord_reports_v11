@@ -401,12 +401,25 @@ class MyBot(commands.Bot):
                         appended = False
                         for i, line in enumerate(cleaned):
                             lower = line.lower()
-                            if "melde dich" in lower or "contact" in lower:
+                            if (
+                                "melde dich" in lower
+                                or "contact" in lower
+                                or "bei fragen" in lower
+                                or "fragen" in lower
+                                or "kontakt" in lower
+                            ):
                                 cleaned[i] = _append_link(line)
                                 appended = True
                                 break
+                        if not appended:
+                            for i, line in enumerate(cleaned):
+                                lower = line.lower()
+                                if lower.startswith("viele grüße") or lower.startswith("moderation"):
+                                    cleaned.insert(i, discord_link)
+                                    appended = True
+                                    break
                         if not appended and cleaned:
-                            cleaned[-1] = _append_link(cleaned[-1])
+                            cleaned.append(discord_link)
 
                         return "\n".join(cleaned).strip()
 
