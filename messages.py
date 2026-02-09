@@ -115,6 +115,12 @@ class Reportview(discord.ui.View):
                 self_report=self_report
             )
             self.add_item(switch_team_now_button)
+
+            # AI apply button should still be available if a recommendation exists.
+            ai_apply_button = ApplyAIRecommendationButton(user_lang)
+            if self.ai_recommendation:
+                ai_apply_button.disabled = False
+            self.add_item(ai_apply_button)
             
             return  # Return early for self_report
 
