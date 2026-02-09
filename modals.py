@@ -41,6 +41,8 @@ def safe_label(label: Optional[str]) -> str:
 
 
 
+
+
 class BaseActionButton(discord.ui.Button):
     """
     Base class for action buttons to reduce code duplication.
@@ -229,6 +231,72 @@ class AddCommentButton(BaseActionButton):
         )
 
 
+class ApplyAIRecommendationButton(discord.ui.Button):
+    """Button to apply the AI recommendation only after manual click."""
+
+    def __init__(self, user_lang: str):
+        label = safe_label(get_translation(user_lang, "ai_apply_recommendation_button"))
+        super().__init__(style=discord.ButtonStyle.success, label=label, custom_id="ai_apply_recommendation")
+        self.user_lang = user_lang
+        self.disabled = True
+
+    async def callback(self, interaction: discord.Interaction):
+        try:
+            await interaction.response.defer(ephemeral=True)
+
+            view = self.view
+            if not view or not getattr(view, "ai_recommendation", None):
+                await interaction.followup.send(
+                    get_translation(self.user_lang, "ai_recommendation_missing"),
+                    ephemeral=True
+                )
+                return
+
+            recommendation = view.ai_recommendation
+            action = recommendation.get("action", "No-Action")
+
+            action_reason = recommendation.get("action_reason") or recommendation.get("recommendation") or "AI"
+            prefix = "KI" if self.user_lang == "de" else "AI"
+            if action_reason and not action_reason.lower().startswith(("ai", "ki")):
+                action_reason = f"{prefix}: {action_reason}"
+            duration = recommendation.get("duration_hours")
+            if isinstance(duration, str) and duration.isdigit():
+                duration = int(duration)
+
+            if action == "No-Action":
+                modlog = get_translation(self.user_lang, "log_ai_recommendation_applied").format(
+                    interaction.user.display_name, action, action_reason
+                )
+                await add_modlog(
+                    interaction, modlog, None, self.user_lang, view.api_client,
+                    original_message=interaction.message
+                )
+                await only_remove_buttons(interaction)
+                await add_emojis_to_messages(interaction, 'ðŸ—‘', original_message=interaction.message)
+                await interaction.followup.send(
+                    get_translation(self.user_lang, "ai_recommendation_applied"),
+                    ephemeral=True
+                )
+                return
+
+            if action == "Temp-Ban" and not isinstance(duration, int):
+                await interaction.followup.send(
+                    get_translation(self.user_lang, "ai_recommendation_failed"),
+                    ephemeral=True
+                )
+                return
+
+            await perform_action(
+                action, action_reason, view.reported_player_name, view.reported_player_id,
+                view.report_author_name, view.report_author_id, interaction.message,
+                self.user_lang, view.api_client, interaction, False, duration
+            )
+        except Exception as e:
+            logger.error(f"Error applying AI recommendation: {e}", exc_info=True)
+            await interaction.followup.send(
+                get_translation(self.user_lang, "ai_apply_failed"),
+                ephemeral=True
+            )
 
 class MessagePlayerModal(discord.ui.Modal):
     """Modal for sending a direct message to a player."""

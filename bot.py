@@ -2,10 +2,10 @@ import os
 import re
 import discord
 from discord.ext import commands
-from discord.ui import View
 
 from dotenv import load_dotenv
 from api_client import APIClient  # Assuming this is the same as provided earlier
+from ai_client import AIClient
 from Levenshtein import distance as levenshtein_distance
 from Levenshtein import jaro_winkler
 from helpers import remove_markdown, remove_bracketed_content, find_player_names, get_translation, get_author_name, \
@@ -24,6 +24,7 @@ load_dotenv()
 # Discord Bot configuration
 TOKEN = os.getenv('DISCORD_BOT_TOKEN')
 API_TOKEN = os.getenv('RCON_API_TOKEN')
+GROK_API_KEY = os.getenv('GROK_API_KEY')
 ALLOWED_CHANNEL_ID = int(os.getenv('ALLOWED_CHANNEL_ID'))  # Assuming channel ID is an integer
 USERNAME = os.getenv('RCON_USERNAME')
 PASSWORD = os.getenv('RCON_PASSWORD')
@@ -41,6 +42,7 @@ class MyBot(commands.Bot):
     def __init__(self, intents):
         super().__init__(command_prefix="!", intents=intents)
         self.api_client = APIClient(None, API_TOKEN)  # Initialisieren ohne API_BASE_URL
+        self.ai_client = AIClient(GROK_API_KEY)
         self.api_base_url = None
         self.api_logged_in = False
         self.excluded_words = load_excluded_words('exclude_words.json')
@@ -174,7 +176,7 @@ class MyBot(commands.Bot):
 
                         # Stellen Sie sicher, dass 'team' vor dem Aufruf von find_and_respond_unit gesetzt ist
                         if team:
-                            await self.find_and_respond_unit(team, unit_name, roles, message)
+                            await self.find_and_respond_unit(team, unit_name, roles, message, clean_description)
                         else:
                             logging.error("Team not identified for unit report.")
 
@@ -182,11 +184,11 @@ class MyBot(commands.Bot):
                         logging.info("Identified as player report.")
                         reported_identifier = " ".join(reported_parts)
                         logging.info(f"Reported identifier: {reported_identifier}")
-                        await self.find_and_respond_player(message, reported_identifier)
+                        await self.find_and_respond_player(message, reported_identifier, clean_description)
                         logging.info("find_and_respond_player called.")
 
 
-    async def find_and_respond_unit(self, team, unit_name, roles, message):
+    async def find_and_respond_unit(self, team, unit_name, roles, message, report_text):
         player_data = await self.api_client.get_detailed_players()
 
         if player_data is None or 'result' not in player_data or 'players' not in player_data['result']:
@@ -218,7 +220,8 @@ class MyBot(commands.Bot):
         if matching_player:
             player_additional_data= await self.api_client.get_player_by_id(matching_player['player_id'])
             embed = await unitreportembed(player_additional_data, user_lang, unit_name, roles, team, matching_player)
-            view = Reportview(self.api_client)
+            ai_recommendation = await self.build_ai_recommendation(report_text, matching_player['name'], embed)
+            view = Reportview(self.api_client, self.ai_client, report_text, ai_recommendation=ai_recommendation)
             await view.add_buttons(user_lang, matching_player['name'], player_additional_data['player_id'])
             response_message = await message.reply(embed=embed, view=view)
             self.last_response_message_id = response_message.id
@@ -226,7 +229,7 @@ class MyBot(commands.Bot):
             await self.player_not_found(message)
         logging.info(get_translation(user_lang, "response_sent").format(unit_name, ', '.join(roles), team))
 
-    async def find_and_respond_player(self, message, reported_identifier, max_levenshtein_distance=3, jaro_winkler_threshold=0.85):
+    async def find_and_respond_player(self, message, reported_identifier, report_text, max_levenshtein_distance=3, jaro_winkler_threshold=0.85):
         logging.info("find_and_respond_player function called")
         logging.info(f"Searching for player report: {reported_identifier}")
 
@@ -276,30 +279,107 @@ class MyBot(commands.Bot):
                 total_playtime_hours = total_playtime_seconds / 3600
                 embed = await playerreportembed(user_lang, best_match, player_stats, total_playtime_hours, best_player_data)
 
+                ai_recommendation = await self.build_ai_recommendation(report_text, best_match, embed)
                 response_message = await message.reply(embed=embed)
                 self.last_response_message_id = response_message.id
-                view = Reportview(self.api_client)
+                view = Reportview(self.api_client, self.ai_client, report_text, ai_recommendation=ai_recommendation)
                 await view.add_buttons(user_lang, best_match, best_player_data['player_id'])
                 await response_message.edit(view=view)
             else:
-                await self.player_not_found(message)
+                await self.player_not_found(message, report_text)
         else:
-            await self.player_not_found(message)
+            await self.player_not_found(message, report_text)
 
-    async def player_not_found(self, message):
+    async def player_not_found(self, message, report_text=""):
         author_name = get_author_name()
-        view = View(timeout=None)
-        view = Reportview(self.api_client)
         name = get_author_name()
         player_id = await get_playerid_from_name(name, self.api_client)
-        await view.add_buttons(user_lang, get_author_name(), player_id, self_report=True)
         embed = await player_not_found_embed(player_id, author_name, user_lang)
+        ai_recommendation = await self.build_ai_recommendation(report_text, author_name, embed)
+        view = Reportview(self.api_client, self.ai_client, report_text, ai_recommendation=ai_recommendation)
+        await view.add_buttons(user_lang, get_author_name(), player_id, self_report=True)
         await message.reply(embed=embed, view=view)
 
 
     async def on_close(self):
         if self.api_client.session:
             await self.api_client.close_session()
+
+    async def build_ai_recommendation(self, report_text, reported_player_name, embed):
+        if not self.ai_client or not self.ai_client.is_configured():
+            if embed:
+                embed.add_field(
+                    name=get_translation(user_lang, "ai_recommendation_title"),
+                    value=get_translation(user_lang, "ai_not_configured"),
+                    inline=False
+                )
+            return None
+
+        if not report_text:
+            if embed:
+                embed.add_field(
+                    name=get_translation(user_lang, "ai_recommendation_title"),
+                    value=get_translation(user_lang, "ai_recommendation_no_report"),
+                    inline=False
+                )
+            return None
+
+        try:
+            recommendation = await self.ai_client.get_recommendation(
+                report_text=report_text,
+                reported_player_name=reported_player_name,
+                user_lang=user_lang,
+            )
+
+            action = recommendation.get("action", "No-Action")
+            allowed_actions = {
+                "Perma-Ban",
+                "Temp-Ban",
+                "Kick",
+                "Punish",
+                "Remove-From-Squad",
+                "Switch-Team-Now",
+                "No-Action",
+            }
+            if action not in allowed_actions:
+                action = "No-Action"
+
+            recommendation["action"] = action
+
+            action_text = action
+            if action == "Temp-Ban":
+                duration = recommendation.get("duration_hours")
+                if isinstance(duration, int):
+                    action_text = f"{action} ({duration}h)"
+
+            if embed:
+                value = (
+                    f"{get_translation(user_lang, 'ai_recommendation_action')}: {action_text}\n"
+                    f"{get_translation(user_lang, 'ai_recommendation_text')}: {recommendation.get('recommendation', '')}\n"
+                    f"{get_translation(user_lang, 'ai_recommendation_reason')}: {recommendation.get('action_reason', '')}\n"
+                    f"{get_translation(user_lang, 'ai_recommendation_rationale')}: {recommendation.get('rationale', '')}"
+                )
+                reply_suggestion = recommendation.get("reply_suggestion")
+                if reply_suggestion:
+                    value += (
+                        f"\n{get_translation(user_lang, 'ai_recommendation_reply')}: {reply_suggestion}"
+                    )
+                embed.add_field(
+                    name=get_translation(user_lang, "ai_recommendation_title"),
+                    value=value,
+                    inline=False
+                )
+
+            return recommendation
+        except Exception as e:
+            logging.error(f"AI recommendation failed: {e}", exc_info=True)
+            if embed:
+                embed.add_field(
+                    name=get_translation(user_lang, "ai_recommendation_title"),
+                    value=get_translation(user_lang, "ai_recommendation_failed"),
+                    inline=False
+                )
+            return None
 
 # Running the bot
 bot = MyBot(intents)

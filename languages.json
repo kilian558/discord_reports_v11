@@ -142,7 +142,23 @@
         "log_unwatch_player": "📋 ({}) removed {} from the watchlist",
         "comment_added_successfully": "✅ Comment added for {}: {}",
         "error_add_comment": "❌ Error adding comment",
-        "log_add_comment": "📋 ({}) added comment for {}: {}"
+        "log_add_comment": "📋 ({}) added comment for {}: {}",
+        "ai_recommendation_button": "🤖 AI",
+        "ai_apply_recommendation_button": "✅ Apply AI",
+        "ai_recommendation_title": "AI Recommendation",
+        "ai_recommendation_action": "Action",
+        "ai_recommendation_text": "Recommendation",
+        "ai_recommendation_reason": "Reason",
+        "ai_recommendation_rationale": "Why",
+        "ai_recommendation_reply": "Suggested Reply",
+        "ai_recommendation_ready": "✅ AI recommendation is ready.",
+        "ai_recommendation_missing": "⚠️ AI recommendation not available.",
+        "ai_recommendation_no_report": "⚠️ No report text available for AI.",
+        "ai_not_configured": "❌ GROK_API_KEY is not configured.",
+        "ai_recommendation_failed": "❌ Failed to get AI recommendation.",
+        "ai_recommendation_applied": "✅ AI recommendation applied.",
+        "ai_apply_failed": "❌ Failed to apply AI recommendation.",
+        "log_ai_recommendation_applied": "📋 ({}) applied AI recommendation: {}. Reason: {}"
     
     },
     "de": {
@@ -288,6 +304,22 @@
         "log_unwatch_player": "📋 ({}) hat {} von der Beobachtungsliste entfernt",
         "comment_added_successfully": "✅ Notiz für {} hinzugefügt: {}",
         "error_add_comment": "❌ Fehler beim Hinzufügen der Notiz",
-        "log_add_comment": "📋 ({}) hat Notiz für {} hinzugefügt: {}"
+        "log_add_comment": "📋 ({}) hat Notiz für {} hinzugefügt: {}",
+        "ai_recommendation_button": "🤖 KI",
+        "ai_apply_recommendation_button": "✅ KI übernehmen",
+        "ai_recommendation_title": "KI Empfehlung",
+        "ai_recommendation_action": "Aktion",
+        "ai_recommendation_text": "Empfehlung",
+        "ai_recommendation_reason": "Grund",
+        "ai_recommendation_rationale": "Begründung",
+        "ai_recommendation_reply": "Vorgeschlagene Antwort",
+        "ai_recommendation_ready": "✅ KI-Empfehlung ist bereit.",
+        "ai_recommendation_missing": "⚠️ Keine KI-Empfehlung verfügbar.",
+        "ai_recommendation_no_report": "⚠️ Kein Report-Text für die KI verfügbar.",
+        "ai_not_configured": "❌ GROK_API_KEY ist nicht konfiguriert.",
+        "ai_recommendation_failed": "❌ KI-Empfehlung konnte nicht geladen werden.",
+        "ai_recommendation_applied": "✅ KI-Empfehlung ausgeführt.",
+        "ai_apply_failed": "❌ KI-Empfehlung konnte nicht ausgeführt werden.",
+        "log_ai_recommendation_applied": "📋 ({}) hat KI-Empfehlung ausgeführt: {}. Grund: {}"
     }
 }

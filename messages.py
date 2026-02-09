@@ -3,7 +3,7 @@ from discord.ui import View, Button
 from helpers import get_translation, get_author_name, get_playerid_from_name
 from modals import TempBanButton, MessagePlayerButton, MessageReportedPlayerButton, Show_logs_button, PermaBanButton, \
     PunishButton, KickButton, Unjustified_Report, No_Action_Button, Manual_process, RemoveFromSquadButton, \
-    SwitchTeamNowButton, WatchPlayerButton
+    SwitchTeamNowButton, WatchPlayerButton, ApplyAIRecommendationButton
 
 
 async def unitreportembed(player_additional_data, user_lang, unit_name, roles, team, player):
@@ -56,9 +56,16 @@ async def playerreportembed(user_lang, best_match, player_stats, total_playtime_
     return embed
 
 class Reportview(discord.ui.View):
-    def __init__(self, api_client):
+    def __init__(self, api_client, ai_client=None, report_text: str = "", ai_recommendation=None):
         super().__init__(timeout=3600)
         self.api_client = api_client
+        self.ai_client = ai_client
+        self.report_text = report_text
+        self.reported_player_name = ""
+        self.reported_player_id = ""
+        self.report_author_name = ""
+        self.report_author_id = ""
+        self.ai_recommendation = ai_recommendation
 
     async def on_timeout(self) -> None:
         for item in self.children:
@@ -110,6 +117,11 @@ class Reportview(discord.ui.View):
             self.add_item(switch_team_now_button)
             
             return  # Return early for self_report
+
+        self.reported_player_name = reported_player_name
+        self.reported_player_id = player_id
+        self.report_author_name = author_name
+        self.report_author_id = author_player_id
 
         # === ROW 1: PUNISHMENTS (Ordered by severity) ===
         # Punish button (Warning)
@@ -250,3 +262,9 @@ class Reportview(discord.ui.View):
         # Manual Process
         manual_process_button = Manual_process(user_lang, self.api_client)
         self.add_item(manual_process_button)
+
+        # === ROW 4: AI RECOMMENDATION ===
+        ai_apply_button = ApplyAIRecommendationButton(user_lang)
+        if self.ai_recommendation:
+            ai_apply_button.disabled = False
+        self.add_item(ai_apply_button)
