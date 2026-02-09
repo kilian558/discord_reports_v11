@@ -140,12 +140,13 @@ class AIClient:
             "Content-Type": "application/json",
         }
 
-        async with aiohttp.ClientSession() as session:
+        timeout = aiohttp.ClientTimeout(total=30)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.post(self.base_url, headers=headers, json=payload) as response:
                 text = await response.text()
                 if response.status != 200:
                     logger.error("Grok API error %s: %s", response.status, text)
-                    raise RuntimeError("Grok API request failed")
+                    raise RuntimeError(f"Grok API error {response.status}")
 
         data = self._extract_json(text)
         if not data:
@@ -157,11 +158,16 @@ class AIClient:
     def _extract_json(self, raw_text: str) -> Optional[Dict[str, Any]]:
         try:
             payload = json.loads(raw_text)
+            if isinstance(payload, dict) and "error" in payload:
+                logger.error("Grok API error response: %s", payload.get("error"))
+                return None
             content = payload["choices"][0]["message"]["content"]
         except Exception:
             content = raw_text
 
         try:
+            if isinstance(content, dict):
+                return content
             return json.loads(content)
         except json.JSONDecodeError:
             match = re.search(r"\{.*\}", content, re.DOTALL)
