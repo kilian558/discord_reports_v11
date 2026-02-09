@@ -120,6 +120,10 @@ class MyBot(commands.Bot):
 
         trigger_words = ["able", "baker", "charlie", "commander", "kommandant", "dog", "easy", "fox", "george", "how", "item", "jig", "king", "love", "mike", "negat", "option", "prep", "queen", "roger", "sugar", "tare", "uncle", "victor", "william", "x-ray", "yoke", "zebra"]
         team = None  # Initialisierung von 'team'
+        abuse_terms = {
+            "fotze", "hurensohn", "hure", "arschloch", "schlampe", "nutte",
+            "bastard", "spast", "idiot", "verpiss", "fick", "fuck"
+        }
 
         if message.embeds:
             embed = message.embeds[0]
@@ -160,10 +164,21 @@ class MyBot(commands.Bot):
 
             if "watched on:" not in clean_description: # Don't react on watchlist messages
                 reported_parts = command_parts
-                report_command_prefixes = {"!admin", "!report", "/admin", "/report"}
+                report_command_prefixes = {"!admin", "!report", "/admin", "/report", "admin"}
                 is_report_command = bool(reported_parts) and reported_parts[0] in report_command_prefixes
+                is_abusive_report = any(re.search(rf"\b{re.escape(term)}\b", clean_description) for term in abuse_terms)
 
                 if reported_parts:
+                    if is_abusive_report:
+                        # Always target the reporter if they use abusive language.
+                        author_name = get_author_name()
+                        if author_name:
+                            logging.info("Abusive language detected; targeting message author.")
+                            await self.find_and_respond_player(message, author_name, clean_description)
+                        else:
+                            logging.error("Author name missing for abusive report.")
+                        return
+
                     if not is_report_command:
                         # For normal chat messages, always target the author (not the mentioned/victim player).
                         author_name = get_author_name()
