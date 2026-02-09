@@ -141,6 +141,8 @@ class AIClient:
             "- Teamkill rule: KICK only if teamkills >= 2. Do NOT kick for a single teamkill.\n"
             "- If the report text is English, reply_suggestion must be English.\n"
             "- If the report text is German, reply_suggestion must be German.\n"
+            "- If the report is just a general complaint/opinion without a concrete violation, use No-Action and no reply_suggestion.\n"
+            "- Only use reply_suggestion when the report explicitly asks a question or lacks key details about a clear violation.\n"
             "\n"
             f"Reported player: {reported_player_name}\n"
             f"Report text: {report_text}\n"

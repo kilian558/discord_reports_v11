@@ -425,10 +425,11 @@ class MyBot(commands.Bot):
             return recommendation
         except Exception as e:
             logging.error(f"AI recommendation failed: {e}", exc_info=True)
+            error_detail = str(e) if str(e) else e.__class__.__name__
             if embed:
                 embed.add_field(
                     name=get_translation(admin_lang, "ai_recommendation_title"),
-                    value=f"{get_translation(admin_lang, 'ai_recommendation_failed')} ({e})",
+                    value=f"{get_translation(admin_lang, 'ai_recommendation_failed')} ({error_detail})",
                     inline=False
                 )
             return None
