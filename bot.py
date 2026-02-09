@@ -160,8 +160,20 @@ class MyBot(commands.Bot):
 
             if "watched on:" not in clean_description: # Don't react on watchlist messages
                 reported_parts = command_parts
+                report_command_prefixes = {"!admin", "!report", "/admin", "/report"}
+                is_report_command = bool(reported_parts) and reported_parts[0] in report_command_prefixes
 
                 if reported_parts:
+                    if not is_report_command:
+                        # For normal chat messages, always target the author (not the mentioned/victim player).
+                        author_name = get_author_name()
+                        if author_name:
+                            logging.info("Chat message report; targeting message author.")
+                            await self.find_and_respond_player(message, author_name, clean_description)
+                        else:
+                            logging.error("Author name missing for chat-based report.")
+                        return
+
                     if any(word in reported_parts for word in trigger_words):
                         logging.info("Identified as unit report.")
                         trigger_word_index = next(i for i, part in enumerate(reported_parts) if part in trigger_words)
