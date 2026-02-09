@@ -22,6 +22,7 @@ class AIClient:
         self,
         report_text: str,
         reported_player_name: str,
+        player_stats: Optional[Dict[str, Any]],
         user_lang: str,
     ) -> Dict[str, Any]:
         if not self.api_key:
@@ -42,6 +43,7 @@ class AIClient:
             "- Punish\n"
             "- Remove-From-Squad\n"
             "- Switch-Team-Now\n"
+            "- Message-Reporter\n"
             "- No-Action\n"
             "\n"
             "Rules and examples:\n"
@@ -51,7 +53,7 @@ class AIClient:
             "- \"redet nicht\" (not communicating in squad) -> Remove-From-Squad.\n"
             "- If uncertain, choose the less severe option.\n"
             "- Provide a well-written action_reason for any action.\n"
-            "- action_reason must ALWAYS end with \"gbg-hll.com\".\n"
+            "- action_reason must include https://discord.gg/gbg-hll and ALWAYS end with \"gbg-hll.com\".\n"
             "- If the report is clearly 100% German, write action_reason in German.\n"
             "- If there is any uncertainty or English in the report, write action_reason in English.\n"
             "- If the report text is a question or incomplete, also provide a sensible response in the same language.\n"
@@ -100,12 +102,15 @@ class AIClient:
             "Style guidance for action_reason:\n"
             "- Write a short, clear, polite notice addressed to the reported player by name.\n"
             "- Explain what happened and why the action was taken.\n"
+            "- For severe offenses, be firm and clear, not lenient.\n"
             "- Keep it factual, non-aggressive, and player-specific.\n"
             "- End with \"gbg-hll.com\" every time.\n"
             "\n"
             "Style guidance for reply_suggestion (if needed):\n"
             "- Address the reporter by name if available.\n"
             "- Ask clarifying questions or give a helpful response.\n"
+            "- The reply is sent in-game; do not ask for screenshots or clips.\n"
+            "- reply_suggestion must include https://discord.gg/gbg-hll and end with \"gbg-hll.com\".\n"
             "- Use the report language (German only if clearly 100% German).\n"
             "\n"
             "Examples (structure only, do not copy text):\n"
@@ -124,10 +129,13 @@ class AIClient:
             "\n"
             "Consistency rules:\n"
             "- If action is No-Action and reply_suggestion exists, recommendation should say to request clarification.\n"
+            "- If reply_suggestion exists, set action to Message-Reporter.\n"
             "- Use a single language per field; do not mix German and English in the same field.\n"
+            "- Teamkill rule: KICK only if teamkills >= 2. Do NOT kick for a single teamkill.\n"
             "\n"
             f"Reported player: {reported_player_name}\n"
             f"Report text: {report_text}\n"
+            f"Player stats: {player_stats if player_stats else 'unknown'}\n"
             f"Language: {user_lang}\n"
         )
 

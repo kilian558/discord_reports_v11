@@ -220,7 +220,9 @@ class MyBot(commands.Bot):
         if matching_player:
             player_additional_data= await self.api_client.get_player_by_id(matching_player['player_id'])
             embed = await unitreportembed(player_additional_data, user_lang, unit_name, roles, team, matching_player)
-            ai_recommendation = await self.build_ai_recommendation(report_text, matching_player['name'], embed)
+            ai_recommendation = await self.build_ai_recommendation(
+                report_text, matching_player['name'], embed, player_stats=None
+            )
             view = Reportview(self.api_client, self.ai_client, report_text, ai_recommendation=ai_recommendation)
             await view.add_buttons(user_lang, matching_player['name'], player_additional_data['player_id'])
             response_message = await message.reply(embed=embed, view=view)
@@ -279,7 +281,9 @@ class MyBot(commands.Bot):
                 total_playtime_hours = total_playtime_seconds / 3600
                 embed = await playerreportembed(user_lang, best_match, player_stats, total_playtime_hours, best_player_data)
 
-                ai_recommendation = await self.build_ai_recommendation(report_text, best_match, embed)
+                ai_recommendation = await self.build_ai_recommendation(
+                    report_text, best_match, embed, player_stats=player_stats
+                )
                 response_message = await message.reply(embed=embed)
                 self.last_response_message_id = response_message.id
                 view = Reportview(self.api_client, self.ai_client, report_text, ai_recommendation=ai_recommendation)
@@ -295,7 +299,9 @@ class MyBot(commands.Bot):
         name = get_author_name()
         player_id = await get_playerid_from_name(name, self.api_client)
         embed = await player_not_found_embed(player_id, author_name, user_lang)
-        ai_recommendation = await self.build_ai_recommendation(report_text, author_name, embed)
+        ai_recommendation = await self.build_ai_recommendation(
+            report_text, author_name, embed, player_stats=None
+        )
         view = Reportview(self.api_client, self.ai_client, report_text, ai_recommendation=ai_recommendation)
         await view.add_buttons(user_lang, get_author_name(), player_id, self_report=True)
         await message.reply(embed=embed, view=view)
@@ -305,7 +311,7 @@ class MyBot(commands.Bot):
         if self.api_client.session:
             await self.api_client.close_session()
 
-    async def build_ai_recommendation(self, report_text, reported_player_name, embed):
+    async def build_ai_recommendation(self, report_text, reported_player_name, embed, player_stats=None):
         admin_lang = "de"
         if not self.ai_client or not self.ai_client.is_configured():
             if embed:
@@ -329,6 +335,7 @@ class MyBot(commands.Bot):
             recommendation = await self.ai_client.get_recommendation(
                 report_text=report_text,
                 reported_player_name=reported_player_name,
+                player_stats=player_stats,
                 user_lang=user_lang,
             )
 
@@ -340,6 +347,7 @@ class MyBot(commands.Bot):
                 "Punish",
                 "Remove-From-Squad",
                 "Switch-Team-Now",
+                "Message-Reporter",
                 "No-Action",
             }
             if action not in allowed_actions:
@@ -348,26 +356,38 @@ class MyBot(commands.Bot):
             recommendation["action"] = action
 
             action_text = action
+            if action == "Message-Reporter":
+                action_text = get_translation(admin_lang, "message_player")
             if action == "Temp-Ban":
                 duration = recommendation.get("duration_hours")
                 if isinstance(duration, int):
                     action_text = f"{action} ({duration}h)"
 
             if embed:
-                value = (
-                    f"{get_translation(admin_lang, 'ai_recommendation_action')}: {action_text}\n"
-                    f"{get_translation(admin_lang, 'ai_recommendation_text')}: {recommendation.get('recommendation', '')}\n"
-                    f"{get_translation(admin_lang, 'ai_recommendation_reason')}: {recommendation.get('action_reason', '')}\n"
-                    f"{get_translation(admin_lang, 'ai_recommendation_rationale')}: {recommendation.get('rationale', '')}"
-                )
+                summary = recommendation.get("recommendation", "")
                 reply_suggestion = recommendation.get("reply_suggestion")
+
+                lines = [
+                    f"• {get_translation(admin_lang, 'ai_recommendation_action')}: {action_text} — {summary}",
+                ]
+
                 if reply_suggestion:
-                    value += (
-                        f"\n{get_translation(admin_lang, 'ai_recommendation_reply')}: {reply_suggestion}"
+                    lines.append(
+                        f"• {get_translation(admin_lang, 'ai_recommendation_reply')}: {reply_suggestion}"
                     )
+                else:
+                    reason = recommendation.get("action_reason", "")
+                    rationale = recommendation.get("rationale", "")
+                    reason_block = reason
+                    if rationale:
+                        reason_block = f"{reason} {rationale}" if reason else rationale
+                    lines.append(
+                        f"• {get_translation(admin_lang, 'ai_recommendation_reason')}: {reason_block}"
+                    )
+
                 embed.add_field(
                     name=get_translation(admin_lang, "ai_recommendation_title"),
-                    value=value,
+                    value="\n".join(lines),
                     inline=False
                 )
 

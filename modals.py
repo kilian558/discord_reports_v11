@@ -268,8 +268,11 @@ class ApplyAIRecommendationButton(discord.ui.Button):
 
             recommendation = view.ai_recommendation
             action = recommendation.get("action", "No-Action")
+            reply_suggestion = recommendation.get("reply_suggestion")
 
             action_reason = recommendation.get("action_reason") or recommendation.get("recommendation") or "AI"
+            if action == "Message-Reporter" and reply_suggestion:
+                action_reason = reply_suggestion
             prefix = "KI" if self.user_lang == "de" else "AI"
             if action_reason and not action_reason.lower().startswith(("ai", "ki")):
                 action_reason = f"{prefix}: {action_reason}"
@@ -878,6 +881,17 @@ async def perform_action(
         if action == "Message":
             result = await ActionHandler.handle_message(
                 player_name, player_id, reason, user_lang, api_client,
+                interaction, original_report_message
+            )
+        elif action == "Message-Reporter":
+            if not author_player_id:
+                await interaction.followup.send(
+                    get_translation(user_lang, "error_sending_message"),
+                    ephemeral=True
+                )
+                return
+            result = await ActionHandler.handle_message(
+                author_name, author_player_id, reason, user_lang, api_client,
                 interaction, original_report_message
             )
         elif action == "Punish":
