@@ -306,11 +306,12 @@ class MyBot(commands.Bot):
             await self.api_client.close_session()
 
     async def build_ai_recommendation(self, report_text, reported_player_name, embed):
+        admin_lang = "de"
         if not self.ai_client or not self.ai_client.is_configured():
             if embed:
                 embed.add_field(
-                    name=get_translation(user_lang, "ai_recommendation_title"),
-                    value=get_translation(user_lang, "ai_not_configured"),
+                    name=get_translation(admin_lang, "ai_recommendation_title"),
+                    value=get_translation(admin_lang, "ai_not_configured"),
                     inline=False
                 )
             return None
@@ -318,8 +319,8 @@ class MyBot(commands.Bot):
         if not report_text:
             if embed:
                 embed.add_field(
-                    name=get_translation(user_lang, "ai_recommendation_title"),
-                    value=get_translation(user_lang, "ai_recommendation_no_report"),
+                    name=get_translation(admin_lang, "ai_recommendation_title"),
+                    value=get_translation(admin_lang, "ai_recommendation_no_report"),
                     inline=False
                 )
             return None
@@ -354,18 +355,18 @@ class MyBot(commands.Bot):
 
             if embed:
                 value = (
-                    f"{get_translation(user_lang, 'ai_recommendation_action')}: {action_text}\n"
-                    f"{get_translation(user_lang, 'ai_recommendation_text')}: {recommendation.get('recommendation', '')}\n"
-                    f"{get_translation(user_lang, 'ai_recommendation_reason')}: {recommendation.get('action_reason', '')}\n"
-                    f"{get_translation(user_lang, 'ai_recommendation_rationale')}: {recommendation.get('rationale', '')}"
+                    f"{get_translation(admin_lang, 'ai_recommendation_action')}: {action_text}\n"
+                    f"{get_translation(admin_lang, 'ai_recommendation_text')}: {recommendation.get('recommendation', '')}\n"
+                    f"{get_translation(admin_lang, 'ai_recommendation_reason')}: {recommendation.get('action_reason', '')}\n"
+                    f"{get_translation(admin_lang, 'ai_recommendation_rationale')}: {recommendation.get('rationale', '')}"
                 )
                 reply_suggestion = recommendation.get("reply_suggestion")
                 if reply_suggestion:
                     value += (
-                        f"\n{get_translation(user_lang, 'ai_recommendation_reply')}: {reply_suggestion}"
+                        f"\n{get_translation(admin_lang, 'ai_recommendation_reply')}: {reply_suggestion}"
                     )
                 embed.add_field(
-                    name=get_translation(user_lang, "ai_recommendation_title"),
+                    name=get_translation(admin_lang, "ai_recommendation_title"),
                     value=value,
                     inline=False
                 )
@@ -375,8 +376,8 @@ class MyBot(commands.Bot):
             logging.error(f"AI recommendation failed: {e}", exc_info=True)
             if embed:
                 embed.add_field(
-                    name=get_translation(user_lang, "ai_recommendation_title"),
-                    value=f"{get_translation(user_lang, 'ai_recommendation_failed')} ({e})",
+                    name=get_translation(admin_lang, "ai_recommendation_title"),
+                    value=f"{get_translation(admin_lang, 'ai_recommendation_failed')} ({e})",
                     inline=False
                 )
             return None
