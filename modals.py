@@ -40,6 +40,19 @@ def safe_label(label: Optional[str]) -> str:
     return label
 
 
+async def _safe_defer(interaction: discord.Interaction, ephemeral: bool = True) -> None:
+    if interaction.response.is_done():
+        return
+    await interaction.response.defer(ephemeral=ephemeral)
+
+
+async def _safe_send(interaction: discord.Interaction, content: str, ephemeral: bool = True) -> None:
+    if interaction.response.is_done():
+        await interaction.followup.send(content, ephemeral=ephemeral)
+    else:
+        await interaction.response.send_message(content, ephemeral=ephemeral)
+
+
 
 
 
@@ -242,11 +255,12 @@ class ApplyAIRecommendationButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         try:
-            await interaction.response.defer(ephemeral=True)
+            await _safe_defer(interaction, ephemeral=True)
 
             view = self.view
             if not view or not getattr(view, "ai_recommendation", None):
-                await interaction.followup.send(
+                await _safe_send(
+                    interaction,
                     get_translation(self.user_lang, "ai_recommendation_missing"),
                     ephemeral=True
                 )
@@ -273,14 +287,16 @@ class ApplyAIRecommendationButton(discord.ui.Button):
                 )
                 await only_remove_buttons(interaction)
                 await add_emojis_to_messages(interaction, 'ðŸ—‘', original_message=interaction.message)
-                await interaction.followup.send(
+                await _safe_send(
+                    interaction,
                     get_translation(self.user_lang, "ai_recommendation_applied"),
                     ephemeral=True
                 )
                 return
 
             if action == "Temp-Ban" and not isinstance(duration, int):
-                await interaction.followup.send(
+                await _safe_send(
+                    interaction,
                     get_translation(self.user_lang, "ai_recommendation_failed"),
                     ephemeral=True
                 )
@@ -293,10 +309,14 @@ class ApplyAIRecommendationButton(discord.ui.Button):
             )
         except Exception as e:
             logger.error(f"Error applying AI recommendation: {e}", exc_info=True)
-            await interaction.followup.send(
-                get_translation(self.user_lang, "ai_apply_failed"),
-                ephemeral=True
-            )
+            try:
+                await _safe_send(
+                    interaction,
+                    get_translation(self.user_lang, "ai_apply_failed"),
+                    ephemeral=True
+                )
+            except Exception:
+                pass
 
 class MessagePlayerModal(discord.ui.Modal):
     """Modal for sending a direct message to a player."""
@@ -418,11 +438,12 @@ class Unjustified_Report(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         """Handle button click."""
         try:
+            await _safe_defer(interaction, ephemeral=True)
             new_view = discord.ui.View(timeout=None)
             await interaction.message.edit(view=new_view)
             await add_emojis_to_messages(interaction, '❌')
             confirm_message = get_translation(self.user_lang, "unjustified_report_acknowledged")
-            await interaction.response.send_message(confirm_message, ephemeral=True)
+            await _safe_send(interaction, confirm_message, ephemeral=True)
 
             if self.author_id:
                 message_to_send = get_translation(self.user_lang, "report_not_granted")
@@ -444,11 +465,12 @@ class No_Action_Button(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         """Handle button click."""
         try:
+            await _safe_defer(interaction, ephemeral=True)
             await only_remove_buttons(interaction)
             modlog = get_translation(self.user_lang, "log_no-action").format(interaction.user.display_name)
             await add_modlog(interaction, modlog, None, self.user_lang, self.api_client)
             confirm_message = get_translation(self.user_lang, "no_action_performed")
-            await interaction.response.send_message(confirm_message, ephemeral=True)
+            await _safe_send(interaction, confirm_message, ephemeral=True)
             await add_emojis_to_messages(interaction, '🗑')
         except Exception as e:
             logger.error(f"Error in No_Action_Button callback: {e}", exc_info=True)
@@ -466,11 +488,12 @@ class Show_logs_button(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         """Handle button click."""
         try:
-            await interaction.response.defer(ephemeral=True)
+            await _safe_defer(interaction, ephemeral=True)
             temp_log_file_path = await get_logs(self.api_client, self.player_name)
             
             if not temp_log_file_path:
-                await interaction.followup.send(
+                await _safe_send(
+                    interaction,
                     get_translation(self.user_lang, "no_logs_found").format(self.player_name),
                     ephemeral=True
                 )
@@ -496,12 +519,13 @@ class Manual_process(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         """Handle button click."""
         try:
+            await _safe_defer(interaction, ephemeral=True)
             view = Finish_Report_Button(user_lang=self.user_lang, api_client=self.api_client)
             modlog = get_translation(self.user_lang, "log_manual").format(interaction.user.display_name)
             await interaction.message.edit(view=view)
             await add_modlog(interaction, modlog, None, self.user_lang, self.api_client, delete_buttons=False)
             confirm_message = get_translation(self.user_lang, "manual_process_respond")
-            await interaction.response.send_message(confirm_message, ephemeral=True)
+            await _safe_send(interaction, confirm_message, ephemeral=True)
             await add_emojis_to_messages(interaction, '👀')
         except Exception as e:
             logger.error(f"Error in Manual_process callback: {e}", exc_info=True)
@@ -535,6 +559,7 @@ class Finish_Report_Button(discord.ui.View):
     async def button_callback(self, interaction: discord.Interaction):
         """Handle finish button click."""
         try:
+            await _safe_defer(interaction, ephemeral=True)
             await add_check_to_messages(interaction)
             await only_remove_buttons(interaction)
             await remove_emojis_to_messages(interaction, "👀")
