@@ -380,7 +380,21 @@ class MyBot(commands.Bot):
                     rationale = recommendation.get("rationale", "")
                     reason_block = reason
                     if rationale:
-                        reason_block = f"{reason} {rationale}" if reason else rationale
+                        reason_block = f"{reason} {rationale}".strip() if reason else rationale
+                    if reason_block:
+                        discord_link = "https://discord.gg/gbg-hll"
+                        suffix = "gbg-hll.com"
+                        if discord_link in reason_block or suffix in reason_block:
+                            reason_block = reason_block.replace(discord_link, "").replace(suffix, "")
+                            reason_block = " ".join(reason_block.split())
+                            reason_block = f"{reason_block} {discord_link} {suffix}".strip()
+                        # Try to keep Verstoß + Maßnahme as two sentences.
+                        if ". " in reason_block:
+                            parts = reason_block.split(". ")
+                            if len(parts) >= 2:
+                                violation = parts[0].strip().rstrip(".")
+                                measure = ". ".join(parts[1:]).strip()
+                                reason_block = f"Verstoß: {violation}.\nMaßnahme: {measure}"
                     lines.append(
                         f"• {get_translation(admin_lang, 'ai_recommendation_reason')}: {reason_block}"
                     )

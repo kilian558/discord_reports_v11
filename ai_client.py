@@ -105,6 +105,8 @@ class AIClient:
             "- For severe offenses, be firm and clear, not lenient.\n"
             "- Keep it factual, non-aggressive, and player-specific.\n"
             "- End with \"gbg-hll.com\" every time.\n"
+            "- Structure action_reason as two sentences: first the violation (Verstoß), then the action taken (Maßnahme).\n"
+            "- Ensure the Maßnahme sentence includes the final link and gbg-hll.com at the end.\n"
             "\n"
             "Style guidance for reply_suggestion (if needed):\n"
             "- Address the reporter by name if available.\n"
